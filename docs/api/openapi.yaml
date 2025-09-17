@@ -1,0 +1,687 @@
+openapi: 3.0.3
+info:
+  title: Airbnb Image Optimizer API
+  description: |
+    API for optimizing Airbnb listing images using AI-powered room detection and enhancement.
+    
+    ## Features
+    - Scrape images from Airbnb listings
+    - Detect room types using AI
+    - Optimize images based on room type
+    - Download optimized images
+    
+    ## Authentication
+    All API endpoints require authentication via API key in the Authorization header.
+    
+    ## Rate Limiting
+    - 10 requests per minute per IP
+    - 100 requests per hour per API key
+    
+    ## Error Handling
+    All errors follow a consistent format with error codes and messages.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@airbnb-optimizer.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://airbnb-optimizer.vercel.app/api/v1
+    description: Production server
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /optimize:
+    post:
+      summary: Start image optimization job
+      description: |
+        Submit an Airbnb listing URL to start the optimization process.
+        The API will scrape images, detect room types, and optimize them.
+      operationId: optimizeImages
+      tags:
+        - Optimization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptimizationRequest'
+            examples:
+              basic:
+                summary: Basic optimization request
+                value:
+                  airbnbUrl: "https://www.airbnb.com/rooms/12345678"
+                  maxImages: 5
+              max_images:
+                summary: Maximum images request
+                value:
+                  airbnbUrl: "https://www.airbnb.com/rooms/12345678"
+                  maxImages: 10
+      responses:
+        '201':
+          description: Optimization job started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationResponse'
+              examples:
+                success:
+                  summary: Successful job creation
+                  value:
+                    success: true
+                    jobId: "550e8400-e29b-41d4-a716-446655440000"
+                    message: "Optimization job started successfully"
+                    data:
+                      job:
+                        id: "550e8400-e29b-41d4-a716-446655440000"
+                        airbnbUrl: "https://www.airbnb.com/rooms/12345678"
+                        status: "pending"
+                        progress:
+                          total: 0
+                          completed: 0
+                          failed: 0
+                        createdAt: "2024-01-01T00:00:00.000Z"
+                        updatedAt: "2024-01-01T00:00:00.000Z"
+                      images: []
+                      imagePairs: []
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Validation error
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        - field: "airbnbUrl"
+                          message: "Invalid Airbnb URL format"
+                    timestamp: "2024-01-01T00:00:00.000Z"
+        '401':
+          description: Unauthorized - invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /job/{jobId}:
+    get:
+      summary: Get job status
+      description: |
+        Retrieve the current status and progress of an optimization job.
+        Includes completed images and any errors that occurred.
+      operationId: getJobStatus
+      tags:
+        - Jobs
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Unique job identifier
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusResponse'
+              examples:
+                pending:
+                  summary: Job pending
+                  value:
+                    success: true
+                    data:
+                      jobId: "550e8400-e29b-41d4-a716-446655440000"
+                      status: "pending"
+                      progress:
+                        total: 0
+                        completed: 0
+                        failed: 0
+                      images: []
+                      imagePairs: []
+                      createdAt: "2024-01-01T00:00:00.000Z"
+                      updatedAt: "2024-01-01T00:00:00.000Z"
+                processing:
+                  summary: Job processing
+                  value:
+                    success: true
+                    data:
+                      jobId: "550e8400-e29b-41d4-a716-446655440000"
+                      status: "processing"
+                      progress:
+                        total: 5
+                        completed: 2
+                        failed: 0
+                      images: []
+                      imagePairs: []
+                      createdAt: "2024-01-01T00:00:00.000Z"
+                      updatedAt: "2024-01-01T00:00:00.000Z"
+                completed:
+                  summary: Job completed
+                  value:
+                    success: true
+                    data:
+                      jobId: "550e8400-e29b-41d4-a716-446655440000"
+                      status: "completed"
+                      progress:
+                        total: 5
+                        completed: 5
+                        failed: 0
+                      images: []
+                      imagePairs:
+                        - original:
+                            id: "img1"
+                            originalUrl: "https://example.com/img1.jpg"
+                            fileName: "image_1.jpg"
+                            roomType: "bedroom"
+                            processingStatus: "completed"
+                            error: null
+                          optimized:
+                            id: "img1-opt"
+                            originalUrl: "https://example.com/img1.jpg"
+                            fileName: "bedroom_1.jpg"
+                            roomType: "bedroom"
+                            processingStatus: "completed"
+                            error: null
+                          roomType: "bedroom"
+                          fileName: "bedroom_1.jpg"
+                      createdAt: "2024-01-01T00:00:00.000Z"
+                      updatedAt: "2024-01-01T00:00:00.000Z"
+        '400':
+          description: Bad request - invalid job ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /download/{jobId}/{imageId}:
+    get:
+      summary: Download optimized image
+      description: |
+        Download a specific optimized image from a completed job.
+        Returns the image file with appropriate headers.
+      operationId: downloadImage
+      tags:
+        - Downloads
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Job identifier
+          schema:
+            type: string
+            format: uuid
+        - name: imageId
+          in: path
+          required: true
+          description: Image identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image file downloaded successfully
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: Attachment filename
+              schema:
+                type: string
+                example: "bedroom_1.jpg"
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      summary: Health check
+      description: |
+        Check the health status of the API and its dependencies.
+        Returns detailed information about system health.
+      operationId: healthCheck
+      tags:
+        - System
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: |
+        Expose Prometheus metrics for monitoring and alerting.
+        Returns metrics in Prometheus format.
+      operationId: getMetrics
+      tags:
+        - System
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP nodejs_memory_usage_bytes Node.js memory usage in bytes
+                  # TYPE nodejs_memory_usage_bytes gauge
+                  nodejs_memory_usage_bytes{type="rss"} 12345678
+                  nodejs_memory_usage_bytes{type="heapTotal"} 8765432
+                  nodejs_memory_usage_bytes{type="heapUsed"} 6543210
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key for authentication
+
+  schemas:
+    OptimizationRequest:
+      type: object
+      required:
+        - airbnbUrl
+      properties:
+        airbnbUrl:
+          type: string
+          format: uri
+          description: Airbnb listing URL to optimize
+          example: "https://www.airbnb.com/rooms/12345678"
+        maxImages:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+          description: Maximum number of images to process
+          example: 5
+
+    OptimizationResponse:
+      type: object
+      required:
+        - success
+        - jobId
+        - message
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful
+          example: true
+        jobId:
+          type: string
+          format: uuid
+          description: Unique job identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        message:
+          type: string
+          description: Human-readable message
+          example: "Optimization job started successfully"
+        data:
+          $ref: '#/components/schemas/JobData'
+
+    JobData:
+      type: object
+      required:
+        - job
+        - images
+        - imagePairs
+      properties:
+        job:
+          $ref: '#/components/schemas/Job'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          description: List of scraped images
+        imagePairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImagePair'
+          description: List of processed image pairs
+
+    Job:
+      type: object
+      required:
+        - id
+        - airbnbUrl
+        - status
+        - progress
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique job identifier
+        airbnbUrl:
+          type: string
+          format: uri
+          description: Original Airbnb URL
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        progress:
+          $ref: '#/components/schemas/Progress'
+        createdAt:
+          type: string
+          format: date-time
+          description: Job creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Job last update timestamp
+
+    JobStatus:
+      type: string
+      enum: [pending, scraping, processing, completed, failed]
+      description: Current job status
+
+    Progress:
+      type: object
+      required:
+        - total
+        - completed
+        - failed
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of images to process
+        completed:
+          type: integer
+          minimum: 0
+          description: Number of successfully processed images
+        failed:
+          type: integer
+          minimum: 0
+          description: Number of failed images
+
+    Image:
+      type: object
+      required:
+        - id
+        - originalUrl
+        - fileName
+        - roomType
+        - processingStatus
+      properties:
+        id:
+          type: string
+          description: Unique image identifier
+        originalUrl:
+          type: string
+          format: uri
+          description: Original image URL
+        fileName:
+          type: string
+          description: Image filename
+        roomType:
+          $ref: '#/components/schemas/RoomType'
+        processingStatus:
+          $ref: '#/components/schemas/ProcessingStatus'
+        error:
+          type: string
+          nullable: true
+          description: Error message if processing failed
+
+    ImagePair:
+      type: object
+      required:
+        - original
+        - roomType
+        - fileName
+      properties:
+        original:
+          $ref: '#/components/schemas/Image'
+        optimized:
+          $ref: '#/components/schemas/Image'
+          nullable: true
+          description: Optimized image (null if processing failed)
+        roomType:
+          $ref: '#/components/schemas/RoomType'
+        fileName:
+          type: string
+          description: Optimized image filename
+
+    RoomType:
+      type: string
+      enum: [bedroom, kitchen, bathroom, living_room, exterior, other]
+      description: Detected room type
+
+    ProcessingStatus:
+      type: string
+      enum: [pending, analyzing, optimizing, completed, failed]
+      description: Image processing status
+
+    JobStatusResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful
+        data:
+          $ref: '#/components/schemas/JobStatusData'
+
+    JobStatusData:
+      type: object
+      required:
+        - jobId
+        - status
+        - progress
+        - images
+        - imagePairs
+        - createdAt
+        - updatedAt
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: Job identifier
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        progress:
+          $ref: '#/components/schemas/Progress'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        imagePairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImagePair'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        error:
+          type: string
+          nullable: true
+          description: Error message if job failed
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - uptime
+        - version
+        - environment
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall system health status
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check timestamp
+        uptime:
+          type: number
+          description: System uptime in seconds
+        version:
+          type: string
+          description: Application version
+        environment:
+          type: string
+          description: Environment name
+        checks:
+          type: object
+          properties:
+            system:
+              type: object
+              description: System information
+            secrets:
+              type: object
+              description: Secrets validation status
+            externalServices:
+              type: object
+              description: External service health
+            database:
+              type: object
+              description: Database health (if configured)
+            cache:
+              type: object
+              description: Cache health (if configured)
+        responseTime:
+          type: number
+          description: Health check response time in milliseconds
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: Always false for errors
+          example: false
+        error:
+          $ref: '#/components/schemas/Error'
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid Airbnb URL format"
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+          description: Additional error details
+
+    ErrorDetail:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Field that caused the error
+        message:
+          type: string
+          description: Field-specific error message
+
+tags:
+  - name: Optimization
+    description: Image optimization operations
+  - name: Jobs
+    description: Job management and status
+  - name: Downloads
+    description: Image download operations
+  - name: System
+    description: System health and metrics

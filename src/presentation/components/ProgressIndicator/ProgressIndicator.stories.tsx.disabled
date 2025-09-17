@@ -1,0 +1,378 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { ProgressIndicator } from './ProgressIndicator';
+import { JobProgress } from '@/application/dto/OptimizationResponse.dto';
+import { JobStatus } from '@/domain/entities/OptimizationJob';
+import { useState } from 'react';
+
+const meta: Meta<typeof ProgressIndicator> = {
+  title: 'Components/ProgressIndicator',
+  component: ProgressIndicator,
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component: 'A progress indicator component that shows real-time processing status with detailed progress information, time estimation, and action buttons.',
+      },
+    },
+  },
+  argTypes: {
+    progress: {
+      description: 'The progress data object containing job status and progress information',
+    },
+    onCancel: {
+      description: 'Callback function when cancel button is clicked',
+      action: 'cancel',
+    },
+    onRetry: {
+      description: 'Callback function when retry button is clicked',
+      action: 'retry',
+    },
+    className: {
+      description: 'Additional CSS classes',
+      control: 'text',
+    },
+    showDetailedProgress: {
+      description: 'Whether to show detailed progress information',
+      control: 'boolean',
+    },
+    autoRefresh: {
+      description: 'Whether to automatically refresh progress',
+      control: 'boolean',
+    },
+    refreshInterval: {
+      description: 'Refresh interval in milliseconds',
+      control: { type: 'number', min: 1000, max: 10000, step: 1000 },
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof ProgressIndicator>;
+
+// Mock data
+const mockProgressProcessing: JobProgress = {
+  jobId: 'job-123',
+  status: JobStatus.PROCESSING,
+  progress: {
+    total: 10,
+    completed: 5,
+    failed: 1,
+  },
+  currentStep: 'Processing image 6 of 10',
+  metadata: {
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:05:00Z',
+    totalImages: 10,
+    completedImages: 5,
+    failedImages: 1,
+  },
+};
+
+const mockProgressScraping: JobProgress = {
+  jobId: 'job-123',
+  status: JobStatus.SCRAPING,
+  progress: {
+    total: 10,
+    completed: 0,
+    failed: 0,
+  },
+  currentStep: 'Scraping images from Airbnb listing',
+  metadata: {
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:02:00Z',
+    totalImages: 10,
+    completedImages: 0,
+    failedImages: 0,
+  },
+};
+
+const mockProgressCompleted: JobProgress = {
+  jobId: 'job-123',
+  status: JobStatus.COMPLETED,
+  progress: {
+    total: 10,
+    completed: 10,
+    failed: 0,
+  },
+  currentStep: undefined,
+  metadata: {
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:10:00Z',
+    completedAt: '2024-01-01T00:10:00Z',
+    totalImages: 10,
+    completedImages: 10,
+    failedImages: 0,
+  },
+};
+
+const mockProgressFailed: JobProgress = {
+  jobId: 'job-123',
+  status: JobStatus.FAILED,
+  progress: {
+    total: 10,
+    completed: 3,
+    failed: 7,
+  },
+  currentStep: undefined,
+  error: 'Processing failed due to network error',
+  metadata: {
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:08:00Z',
+    totalImages: 10,
+    completedImages: 3,
+    failedImages: 7,
+  },
+};
+
+const mockProgressCancelled: JobProgress = {
+  jobId: 'job-123',
+  status: JobStatus.CANCELLED,
+  progress: {
+    total: 10,
+    completed: 4,
+    failed: 0,
+  },
+  currentStep: undefined,
+  metadata: {
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:06:00Z',
+    totalImages: 10,
+    completedImages: 4,
+    failedImages: 0,
+  },
+};
+
+// Interactive wrapper for auto-progressing demo
+const InteractiveWrapper = (args: any) => {
+  const [progress, setProgress] = useState(mockProgressProcessing);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const startProgress = () => {
+    setIsRunning(true);
+    setProgress(mockProgressProcessing);
+    
+    // Simulate progress
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 1;
+      if (currentProgress <= 10) {
+        setProgress(prev => ({
+          ...prev,
+          progress: {
+            ...prev.progress,
+            completed: currentProgress,
+          },
+          currentStep: currentProgress < 10 ? `Processing image ${currentProgress + 1} of 10` : 'Finalizing...',
+        }));
+      } else {
+        clearInterval(interval);
+        setProgress(mockProgressCompleted);
+        setIsRunning(false);
+      }
+    }, 1000);
+  };
+
+  const resetProgress = () => {
+    setIsRunning(false);
+    setProgress(mockProgressProcessing);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex space-x-4">
+        <button
+          onClick={startProgress}
+          disabled={isRunning}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50"
+        >
+          {isRunning ? 'Running...' : 'Start Progress Demo'}
+        </button>
+        <button
+          onClick={resetProgress}
+          className="px-4 py-2 bg-gray-600 text-white rounded-md"
+        >
+          Reset
+        </button>
+      </div>
+      <ProgressIndicator
+        {...args}
+        progress={progress}
+      />
+    </div>
+  );
+};
+
+export const Processing: Story = {
+  args: {
+    progress: mockProgressProcessing,
+    onCancel: () => console.log('Cancel clicked'),
+  },
+};
+
+export const Scraping: Story = {
+  args: {
+    progress: mockProgressScraping,
+    onCancel: () => console.log('Cancel clicked'),
+  },
+};
+
+export const Completed: Story = {
+  args: {
+    progress: mockProgressCompleted,
+  },
+};
+
+export const Failed: Story = {
+  args: {
+    progress: mockProgressFailed,
+    onRetry: () => console.log('Retry clicked'),
+  },
+};
+
+export const Cancelled: Story = {
+  args: {
+    progress: mockProgressCancelled,
+  },
+};
+
+export const WithDetailedProgress: Story = {
+  args: {
+    progress: mockProgressProcessing,
+    showDetailedProgress: true,
+    onCancel: () => console.log('Cancel clicked'),
+  },
+};
+
+export const WithoutDetailedProgress: Story = {
+  args: {
+    progress: mockProgressProcessing,
+    showDetailedProgress: false,
+    onCancel: () => console.log('Cancel clicked'),
+  },
+};
+
+export const InteractiveDemo: Story = {
+  args: {
+    showDetailedProgress: true,
+    onCancel: () => console.log('Cancel clicked'),
+  },
+  render: InteractiveWrapper,
+  parameters: {
+    docs: {
+      description: {
+        story: 'Interactive demo that simulates real-time progress updates. Click "Start Progress Demo" to see the progress bar fill up automatically.',
+      },
+    },
+  },
+};
+
+export const AllStates: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Scraping</h3>
+        <ProgressIndicator progress={mockProgressScraping} onCancel={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Processing</h3>
+        <ProgressIndicator progress={mockProgressProcessing} onCancel={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Completed</h3>
+        <ProgressIndicator progress={mockProgressCompleted} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Failed</h3>
+        <ProgressIndicator progress={mockProgressFailed} onRetry={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Cancelled</h3>
+        <ProgressIndicator progress={mockProgressCancelled} />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Showcase of all possible progress states and their visual representations.',
+      },
+    },
+  },
+};
+
+export const ProgressVariations: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Early Stage (10%)</h3>
+        <ProgressIndicator 
+          progress={{
+            ...mockProgressProcessing,
+            progress: { total: 10, completed: 1, failed: 0 },
+            currentStep: 'Processing image 2 of 10',
+          }} 
+          onCancel={() => {}} 
+        />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Mid Stage (50%)</h3>
+        <ProgressIndicator 
+          progress={mockProgressProcessing} 
+          onCancel={() => {}} 
+        />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Late Stage (90%)</h3>
+        <ProgressIndicator 
+          progress={{
+            ...mockProgressProcessing,
+            progress: { total: 10, completed: 9, failed: 0 },
+            currentStep: 'Processing final image',
+          }} 
+          onCancel={() => {}} 
+        />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">With Failures (60% complete, 20% failed)</h3>
+        <ProgressIndicator 
+          progress={{
+            ...mockProgressProcessing,
+            progress: { total: 10, completed: 6, failed: 2 },
+            currentStep: 'Processing image 7 of 10',
+          }} 
+          onCancel={() => {}} 
+        />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Different progress percentages and failure scenarios.',
+      },
+    },
+  },
+};
+
+export const CustomRefreshInterval: Story = {
+  args: {
+    progress: mockProgressProcessing,
+    autoRefresh: true,
+    refreshInterval: 5000,
+    onCancel: () => console.log('Cancel clicked'),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Progress indicator with custom 5-second refresh interval instead of the default 2 seconds.',
+      },
+    },
+  },
+};

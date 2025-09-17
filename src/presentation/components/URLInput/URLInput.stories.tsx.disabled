@@ -1,0 +1,241 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { URLInput } from './URLInput';
+import { useState } from 'react';
+
+const meta: Meta<typeof URLInput> = {
+  title: 'Components/URLInput',
+  component: URLInput,
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component: 'A form input component for entering Airbnb listing URLs with validation, paste detection, and advanced options.',
+      },
+    },
+  },
+  argTypes: {
+    onSubmit: {
+      description: 'Callback function when form is submitted',
+      action: 'submit',
+    },
+    isLoading: {
+      description: 'Whether the form is in loading state',
+      control: 'boolean',
+    },
+    error: {
+      description: 'External error message to display',
+      control: 'text',
+    },
+    className: {
+      description: 'Additional CSS classes',
+      control: 'text',
+    },
+    placeholder: {
+      description: 'Input placeholder text',
+      control: 'text',
+    },
+    maxImages: {
+      description: 'Maximum number of images to process',
+      control: { type: 'number', min: 1, max: 10 },
+    },
+    showAdvancedOptions: {
+      description: 'Whether to show advanced options',
+      control: 'boolean',
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof URLInput>;
+
+// Interactive wrapper component
+const InteractiveWrapper = (args: any) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (data: any) => {
+    setIsLoading(true);
+    setError(null);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      if (Math.random() > 0.7) {
+        setError('Simulated error occurred');
+      }
+    }, 2000);
+    
+    args.onSubmit?.(data);
+  };
+
+  return (
+    <URLInput
+      {...args}
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+      error={error}
+    />
+  );
+};
+
+export const Default: Story = {
+  args: {
+    placeholder: 'https://www.airbnb.com/rooms/12345678',
+  },
+  render: InteractiveWrapper,
+};
+
+export const WithAdvancedOptions: Story = {
+  args: {
+    placeholder: 'https://www.airbnb.com/rooms/12345678',
+    showAdvancedOptions: true,
+    maxImages: 5,
+  },
+  render: InteractiveWrapper,
+};
+
+export const Loading: Story = {
+  args: {
+    placeholder: 'https://www.airbnb.com/rooms/12345678',
+    isLoading: true,
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    placeholder: 'https://www.airbnb.com/rooms/12345678',
+    error: 'Failed to process the listing. Please try again.',
+  },
+};
+
+export const CustomPlaceholder: Story = {
+  args: {
+    placeholder: 'Enter your Airbnb listing URL here...',
+  },
+  render: InteractiveWrapper,
+};
+
+export const CustomMaxImages: Story = {
+  args: {
+    placeholder: 'https://www.airbnb.com/rooms/12345678',
+    showAdvancedOptions: true,
+    maxImages: 3,
+  },
+  render: InteractiveWrapper,
+};
+
+export const ValidationStates: Story = {
+  render: () => (
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Empty State</h3>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Invalid URL Format</h3>
+        <div className="note mb-4">
+          Try typing &quot;invalid-url&quot; to see validation error
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Non-Airbnb URL</h3>
+        <div className="note mb-4">
+          Try typing &quot;https://example.com/rooms/123&quot; to see validation error
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Valid Airbnb URL</h3>
+        <div className="note mb-4">
+          Try typing &quot;https://www.airbnb.com/rooms/12345678&quot; to see success state
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstration of different validation states and error messages.',
+      },
+    },
+  },
+};
+
+export const DifferentDomains: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">US Domain</h3>
+        <div className="note mb-4">
+          Try: https://www.airbnb.com/rooms/12345678
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">UK Domain</h3>
+        <div className="note mb-4">
+          Try: https://www.airbnb.co.uk/rooms/12345678
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Canadian Domain</h3>
+        <div className="note mb-4">
+          Try: https://www.airbnb.ca/rooms/12345678
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Australian Domain</h3>
+        <div className="note mb-4">
+          Try: https://www.airbnb.com.au/rooms/12345678
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstration of validation for different Airbnb domains.',
+      },
+    },
+  },
+};
+
+export const Accessibility: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Keyboard Navigation</h3>
+        <div className="note mb-4">
+          Use Tab to navigate between elements, Enter to submit, and Escape to clear.
+        </div>
+        <URLInput onSubmit={() => {}} />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Screen Reader Support</h3>
+        <div className="note mb-4">
+          All elements have proper ARIA labels and roles for screen readers.
+        </div>
+        <URLInput onSubmit={() => {}} showAdvancedOptions={true} />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstration of accessibility features including keyboard navigation and screen reader support.',
+      },
+    },
+  },
+};

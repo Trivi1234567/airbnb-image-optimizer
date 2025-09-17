@@ -1,0 +1,47 @@
+# Airbnb Image Optimizer - MVP with Before/After
+
+## IMPORTANT: DO NOT DELETE EXISTING FILES
+- Never delete documentation files
+- Preserve /docs folder at all times
+- Keep all .md files intact
+
+## Architecture
+- Single Next.js 14 app with App Router
+- Deploy to Vercel (free tier)
+- TypeScript, Tailwind CSS, ESLint
+- No email system, no watermarks
+
+## Core Features
+1. Scrape Airbnb listing images (Apify)
+2. Detect room type per image (Gemini)
+3. Optimize based on room type (Gemini)
+4. Display BEFORE and AFTER comparison
+5. Direct download of optimized images
+
+## Processing Flow
+1. User submits Airbnb URL
+2. Scrape images from listing (max 10)
+3. For each image:
+   - Store original as "before"
+   - Detect room type using gemini-2.0-flash-exp
+   - Apply optimization using gemini-2.5-flash-image-preview
+   - Store optimized as "after"
+4. Display side-by-side comparison
+5. Download individual or all images
+
+## Room-Specific Prompts
+bedroom: "Transform to luxury hotel quality: perfect morning light, crisp linens, remove clutter"
+kitchen: "Premium real estate photo: bright, clean, gleaming surfaces, no clutter"
+bathroom: "Spa-like atmosphere: bright clinical lighting, sparkling fixtures"
+living_room: "Warm inviting space: enhanced natural light, perfect symmetry"
+exterior: "Enhanced curb appeal: perfect golden hour lighting, vibrant landscaping"
+
+## API Keys Required
+- APIFY_TOKEN
+- GEMINI_API_KEY
+
+## UI Requirements
+- Before/After slider or side-by-side view
+- Room type badge on each image
+- Download button for optimized version
+- Download all as ZIP

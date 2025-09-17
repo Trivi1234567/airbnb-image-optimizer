@@ -1,0 +1,247 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { ImageComparison } from './ImageComparison';
+import { ImagePairResponse } from '@/application/dto/OptimizationResponse.dto';
+import { RoomType } from '@/domain/entities/RoomType';
+
+const meta: Meta<typeof ImageComparison> = {
+  title: 'Components/ImageComparison',
+  component: ImageComparison,
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component: 'A component for comparing original and optimized images with multiple view modes, zoom functionality, and download capabilities.',
+      },
+    },
+  },
+  argTypes: {
+    imagePair: {
+      description: 'The image pair data containing original and optimized images',
+    },
+    onDownload: {
+      description: 'Callback function when download button is clicked',
+      action: 'download',
+    },
+    onDownloadAll: {
+      description: 'Callback function when download all button is clicked',
+      action: 'downloadAll',
+    },
+    jobId: {
+      description: 'Job ID for downloading images',
+      control: 'text',
+    },
+    className: {
+      description: 'Additional CSS classes',
+      control: 'text',
+    },
+    showDownloadAll: {
+      description: 'Whether to show the download all button',
+      control: 'boolean',
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof ImageComparison>;
+
+// Mock data
+const mockImagePair: ImagePairResponse = {
+  original: {
+    id: 'original-1',
+    originalUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
+    fileName: 'bedroom-1.jpg',
+    roomType: RoomType.BEDROOM,
+    processingStatus: 'completed',
+  },
+  optimized: {
+    id: 'optimized-1',
+    originalUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop&sat=1.2&contrast=1.1',
+    fileName: 'bedroom-1-optimized.jpg',
+    roomType: RoomType.BEDROOM,
+    processingStatus: 'completed',
+  },
+  roomType: RoomType.BEDROOM,
+  fileName: 'bedroom-1.jpg',
+};
+
+const mockImagePairProcessing: ImagePairResponse = {
+  original: {
+    id: 'original-2',
+    originalUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop',
+    fileName: 'kitchen-1.jpg',
+    roomType: RoomType.KITCHEN,
+    processingStatus: 'analyzing',
+  },
+  optimized: undefined,
+  roomType: RoomType.KITCHEN,
+  fileName: 'kitchen-1.jpg',
+};
+
+const mockImagePairFailed: ImagePairResponse = {
+  original: {
+    id: 'original-3',
+    originalUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&h=600&fit=crop',
+    fileName: 'bathroom-1.jpg',
+    roomType: RoomType.BATHROOM,
+    processingStatus: 'failed',
+    error: 'Processing failed due to network error',
+  },
+  optimized: undefined,
+  roomType: RoomType.BATHROOM,
+  fileName: 'bathroom-1.jpg',
+};
+
+const mockImagePairLivingRoom: ImagePairResponse = {
+  original: {
+    id: 'original-4',
+    originalUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
+    fileName: 'living-room-1.jpg',
+    roomType: RoomType.LIVING_ROOM,
+    processingStatus: 'completed',
+  },
+  optimized: {
+    id: 'optimized-4',
+    originalUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop&sat=1.2&contrast=1.1',
+    fileName: 'living-room-1-optimized.jpg',
+    roomType: RoomType.LIVING_ROOM,
+    processingStatus: 'completed',
+  },
+  roomType: RoomType.LIVING_ROOM,
+  fileName: 'living-room-1.jpg',
+};
+
+const mockImagePairExterior: ImagePairResponse = {
+  original: {
+    id: 'original-5',
+    originalUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
+    fileName: 'exterior-1.jpg',
+    roomType: RoomType.EXTERIOR,
+    processingStatus: 'completed',
+  },
+  optimized: {
+    id: 'optimized-5',
+    originalUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop&sat=1.2&contrast=1.1',
+    fileName: 'exterior-1-optimized.jpg',
+    roomType: RoomType.EXTERIOR,
+    processingStatus: 'completed',
+  },
+  roomType: RoomType.EXTERIOR,
+  fileName: 'exterior-1.jpg',
+};
+
+export const Default: Story = {
+  args: {
+    imagePair: mockImagePair,
+    jobId: 'test-job-id',
+  },
+};
+
+export const Processing: Story = {
+  args: {
+    imagePair: mockImagePairProcessing,
+    jobId: 'test-job-id',
+  },
+};
+
+export const Failed: Story = {
+  args: {
+    imagePair: mockImagePairFailed,
+    jobId: 'test-job-id',
+  },
+};
+
+export const WithDownloadAll: Story = {
+  args: {
+    imagePair: mockImagePair,
+    jobId: 'test-job-id',
+    showDownloadAll: true,
+  },
+};
+
+export const LivingRoom: Story = {
+  args: {
+    imagePair: mockImagePairLivingRoom,
+    jobId: 'test-job-id',
+  },
+};
+
+export const Exterior: Story = {
+  args: {
+    imagePair: mockImagePairExterior,
+    jobId: 'test-job-id',
+  },
+};
+
+export const CustomClassName: Story = {
+  args: {
+    imagePair: mockImagePair,
+    jobId: 'test-job-id',
+    className: 'max-w-4xl mx-auto',
+  },
+};
+
+export const AllRoomTypes: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Bedroom</h3>
+        <ImageComparison imagePair={mockImagePair} jobId="test-job-id" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Kitchen (Processing)</h3>
+        <ImageComparison imagePair={mockImagePairProcessing} jobId="test-job-id" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Bathroom (Failed)</h3>
+        <ImageComparison imagePair={mockImagePairFailed} jobId="test-job-id" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Living Room</h3>
+        <ImageComparison imagePair={mockImagePairLivingRoom} jobId="test-job-id" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Exterior</h3>
+        <ImageComparison imagePair={mockImagePairExterior} jobId="test-job-id" />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Showcase of all room types with different processing states.',
+      },
+    },
+  },
+};
+
+export const ViewModes: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Side by Side (Default)</h3>
+        <ImageComparison imagePair={mockImagePair} jobId="test-job-id" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Slider View</h3>
+        <div className="note">
+          Switch to slider view using the view mode toggle to see the comparison slider.
+        </div>
+        <ImageComparison imagePair={mockImagePair} jobId="test-job-id" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Toggle View</h3>
+        <div className="note">
+          Switch to toggle view using the view mode toggle to see hover-to-compare functionality.
+        </div>
+        <ImageComparison imagePair={mockImagePair} jobId="test-job-id" />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstration of different view modes available in the component.',
+      },
+    },
+  },
+};
