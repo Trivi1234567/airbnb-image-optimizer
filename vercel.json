@@ -3,17 +3,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "app/api/v1/optimize/route.ts": {
-      "maxDuration": 30
-    },
-    "app/api/v1/job/[id]/route.ts": {
-      "maxDuration": 10
-    },
-    "app/api/v1/download/[jobId]/[imageId]/route.ts": {
-      "maxDuration": 15
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
