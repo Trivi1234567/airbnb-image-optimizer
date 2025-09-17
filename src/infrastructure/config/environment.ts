@@ -126,7 +126,7 @@ function getEnv() {
 }
 
 export const env = new Proxy({} as any, {
-  get(target, prop) {
+  get(_target, prop) {
     return getEnv()[prop];
   }
 });
@@ -141,7 +141,7 @@ export const isTest = env.NODE_ENV === 'test';
 
 // Feature flags (lazy loading)
 export const features = new Proxy({} as any, {
-  get(target, prop) {
+  get(_target, prop) {
     const env = getEnv();
     switch (prop) {
       case 'beta': return env.ENABLE_BETA_FEATURES;
@@ -156,7 +156,7 @@ export const features = new Proxy({} as any, {
 
 // Service configurations (lazy loading)
 export const services = new Proxy({} as any, {
-  get(target, prop) {
+  get(_target, prop) {
     const env = getEnv();
     switch (prop) {
       case 'apify': return {
@@ -190,7 +190,7 @@ export const services = new Proxy({} as any, {
 
 // Cache configurations (lazy loading)
 export const cache = new Proxy({} as any, {
-  get(target, prop) {
+  get(_target, prop) {
     const env = getEnv();
     if (prop === 'ttl') {
       return {
@@ -205,7 +205,7 @@ export const cache = new Proxy({} as any, {
 
 // Image processing configuration (lazy loading)
 export const imageConfig = new Proxy({} as any, {
-  get(target, prop) {
+  get(_target, prop) {
     const env = getEnv();
     switch (prop) {
       case 'maxImages': return env.MAX_IMAGES_PER_REQUEST;
@@ -221,7 +221,7 @@ export const imageConfig = new Proxy({} as any, {
 
 // Rate limiting configuration (lazy loading)
 export const rateLimit = new Proxy({} as any, {
-  get(target, prop) {
+  get(_target, prop) {
     const env = getEnv();
     switch (prop) {
       case 'maxRequests': return env.RATE_LIMIT_MAX_REQUESTS;
