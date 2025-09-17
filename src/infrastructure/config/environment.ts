@@ -115,8 +115,21 @@ function validateEnvironment() {
   }
 }
 
-// Export validated environment
-export const env = validateEnvironment();
+// Export validated environment (lazy loading to prevent build-time failures)
+let _env: any = null;
+
+function getEnv() {
+  if (!_env) {
+    _env = validateEnvironment();
+  }
+  return _env;
+}
+
+export const env = new Proxy({} as any, {
+  get(target, prop) {
+    return getEnv()[prop];
+  }
+});
 
 // Type-safe environment access
 export type Environment = z.infer<typeof envSchema>;
@@ -126,64 +139,94 @@ export const isDevelopment = env.NODE_ENV === 'development';
 export const isProduction = env.NODE_ENV === 'production';
 export const isTest = env.NODE_ENV === 'test';
 
-// Feature flags
-export const features = {
-  beta: env.ENABLE_BETA_FEATURES,
-  debug: env.ENABLE_DEBUG_MODE,
-  analytics: env.ENABLE_ANALYTICS,
-  errorReporting: env.ENABLE_ERROR_REPORTING,
-  performanceMonitoring: env.ENABLE_PERFORMANCE_MONITORING,
-} as const;
+// Feature flags (lazy loading)
+export const features = new Proxy({} as any, {
+  get(target, prop) {
+    const env = getEnv();
+    switch (prop) {
+      case 'beta': return env.ENABLE_BETA_FEATURES;
+      case 'debug': return env.ENABLE_DEBUG_MODE;
+      case 'analytics': return env.ENABLE_ANALYTICS;
+      case 'errorReporting': return env.ENABLE_ERROR_REPORTING;
+      case 'performanceMonitoring': return env.ENABLE_PERFORMANCE_MONITORING;
+      default: return undefined;
+    }
+  }
+});
 
-// Service configurations
-export const services = {
-  apify: {
-    token: env.APIFY_TOKEN,
-    baseUrl: env.APIFY_API_BASE_URL,
-    timeout: env.APIFY_TIMEOUT_MS,
-    retryAttempts: env.APIFY_RETRY_ATTEMPTS,
-  },
-  gemini: {
-    apiKey: env.GEMINI_API_KEY,
-    baseUrl: env.GEMINI_API_BASE_URL,
-    timeout: env.GEMINI_TIMEOUT_MS,
-    retryAttempts: env.GEMINI_RETRY_ATTEMPTS,
-  },
-  redis: {
-    url: env.REDIS_URL || undefined,
-    password: env.REDIS_PASSWORD || undefined,
-  },
-  database: {
-    url: env.DATABASE_URL || undefined,
-    pool: {
-      min: env.DB_POOL_MIN,
-      max: env.DB_POOL_MAX,
-      idleTimeout: env.DB_POOL_IDLE_TIMEOUT_MS,
-    },
-  },
-} as const;
+// Service configurations (lazy loading)
+export const services = new Proxy({} as any, {
+  get(target, prop) {
+    const env = getEnv();
+    switch (prop) {
+      case 'apify': return {
+        token: env.APIFY_TOKEN,
+        baseUrl: env.APIFY_API_BASE_URL,
+        timeout: env.APIFY_TIMEOUT_MS,
+        retryAttempts: env.APIFY_RETRY_ATTEMPTS,
+      };
+      case 'gemini': return {
+        apiKey: env.GEMINI_API_KEY,
+        baseUrl: env.GEMINI_API_BASE_URL,
+        timeout: env.GEMINI_TIMEOUT_MS,
+        retryAttempts: env.GEMINI_RETRY_ATTEMPTS,
+      };
+      case 'redis': return {
+        url: env.REDIS_URL || undefined,
+        password: env.REDIS_PASSWORD || undefined,
+      };
+      case 'database': return {
+        url: env.DATABASE_URL || undefined,
+        pool: {
+          min: env.DB_POOL_MIN,
+          max: env.DB_POOL_MAX,
+          idleTimeout: env.DB_POOL_IDLE_TIMEOUT_MS,
+        },
+      };
+      default: return undefined;
+    }
+  }
+});
 
-// Cache configurations
-export const cache = {
-  ttl: {
-    default: env.CACHE_TTL_SECONDS,
-    api: env.API_CACHE_TTL_SECONDS,
-    image: env.IMAGE_CACHE_TTL_SECONDS,
-  },
-} as const;
+// Cache configurations (lazy loading)
+export const cache = new Proxy({} as any, {
+  get(target, prop) {
+    const env = getEnv();
+    if (prop === 'ttl') {
+      return {
+        default: env.CACHE_TTL_SECONDS,
+        api: env.API_CACHE_TTL_SECONDS,
+        image: env.IMAGE_CACHE_TTL_SECONDS,
+      };
+    }
+    return undefined;
+  }
+});
 
-// Image processing configuration
-export const imageConfig = {
-  maxImages: env.MAX_IMAGES_PER_REQUEST,
-  maxSizeMB: env.MAX_IMAGE_SIZE_MB,
-  supportedFormats: env.SUPPORTED_IMAGE_FORMATS.split(','),
-  quality: env.IMAGE_QUALITY,
-  maxWidth: env.IMAGE_MAX_WIDTH,
-  maxHeight: env.IMAGE_MAX_HEIGHT,
-} as const;
+// Image processing configuration (lazy loading)
+export const imageConfig = new Proxy({} as any, {
+  get(target, prop) {
+    const env = getEnv();
+    switch (prop) {
+      case 'maxImages': return env.MAX_IMAGES_PER_REQUEST;
+      case 'maxSizeMB': return env.MAX_IMAGE_SIZE_MB;
+      case 'supportedFormats': return env.SUPPORTED_IMAGE_FORMATS.split(',');
+      case 'quality': return env.IMAGE_QUALITY;
+      case 'maxWidth': return env.IMAGE_MAX_WIDTH;
+      case 'maxHeight': return env.IMAGE_MAX_HEIGHT;
+      default: return undefined;
+    }
+  }
+});
 
-// Rate limiting configuration
-export const rateLimit = {
-  maxRequests: env.RATE_LIMIT_MAX_REQUESTS,
-  windowMs: env.RATE_LIMIT_WINDOW_MS,
-} as const;
+// Rate limiting configuration (lazy loading)
+export const rateLimit = new Proxy({} as any, {
+  get(target, prop) {
+    const env = getEnv();
+    switch (prop) {
+      case 'maxRequests': return env.RATE_LIMIT_MAX_REQUESTS;
+      case 'windowMs': return env.RATE_LIMIT_WINDOW_MS;
+      default: return undefined;
+    }
+  }
+});
