@@ -219,3 +219,4 @@ MIT License - see LICENSE file for details.
 
 For support, please open an issue in the GitHub repository.
 # Trigger deployment
+# Force Vercel rebuild - Wed Sep 17 18:56:57 IST 2025
