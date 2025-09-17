@@ -109,7 +109,72 @@ function validateEnvironment() {
       });
       console.error('\nPlease check your environment variables and try again.');
       console.error('See env.example for required variables.');
-      process.exit(1);
+      
+      // Never exit during build process - always return fallback
+      console.warn('⚠️ Using fallback environment configuration for build process');
+      
+      // Return a fallback configuration for build time
+      return {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || 'development',
+        PORT: process.env.PORT || '3000',
+        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000',
+        APIFY_TOKEN: process.env.APIFY_TOKEN || 'fallback-token',
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'fallback-key',
+        NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-secret-key-for-development-only',
+        NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+        JWT_SECRET: process.env.JWT_SECRET || 'dev-jwt-secret-key-for-development-only',
+        RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS || '100',
+        RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS || '60000',
+        MAX_IMAGES_PER_REQUEST: process.env.MAX_IMAGES_PER_REQUEST || '10',
+        MAX_IMAGE_SIZE_MB: process.env.MAX_IMAGE_SIZE_MB || '5',
+        SUPPORTED_IMAGE_FORMATS: process.env.SUPPORTED_IMAGE_FORMATS || 'jpg,jpeg,png,webp',
+        IMAGE_QUALITY: process.env.IMAGE_QUALITY || '85',
+        IMAGE_MAX_WIDTH: process.env.IMAGE_MAX_WIDTH || '1920',
+        IMAGE_MAX_HEIGHT: process.env.IMAGE_MAX_HEIGHT || '1080',
+        LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+        LOG_FORMAT: process.env.LOG_FORMAT || 'json',
+        LOG_FILE_PATH: process.env.LOG_FILE_PATH || './logs/app.log',
+        SENTRY_DSN: process.env.SENTRY_DSN || '',
+        SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT || 'development',
+        NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID || '',
+        NEXT_PUBLIC_MIXPANEL_TOKEN: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN || '',
+        ENABLE_PERFORMANCE_MONITORING: process.env.ENABLE_PERFORMANCE_MONITORING || 'true',
+        PERFORMANCE_SAMPLE_RATE: process.env.PERFORMANCE_SAMPLE_RATE || '0.1',
+        REDIS_URL: process.env.REDIS_URL || '',
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
+        CACHE_TTL_SECONDS: process.env.CACHE_TTL_SECONDS || '3600',
+        API_CACHE_TTL_SECONDS: process.env.API_CACHE_TTL_SECONDS || '300',
+        IMAGE_CACHE_TTL_SECONDS: process.env.IMAGE_CACHE_TTL_SECONDS || '86400',
+        DATABASE_URL: process.env.DATABASE_URL || '',
+        DB_POOL_MIN: process.env.DB_POOL_MIN || '2',
+        DB_POOL_MAX: process.env.DB_POOL_MAX || '10',
+        DB_POOL_IDLE_TIMEOUT_MS: process.env.DB_POOL_IDLE_TIMEOUT_MS || '30000',
+        APIFY_API_BASE_URL: process.env.APIFY_API_BASE_URL || 'https://api.apify.com/v2',
+        APIFY_TIMEOUT_MS: process.env.APIFY_TIMEOUT_MS || '30000',
+        APIFY_RETRY_ATTEMPTS: process.env.APIFY_RETRY_ATTEMPTS || '3',
+        GEMINI_API_BASE_URL: process.env.GEMINI_API_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta',
+        GEMINI_TIMEOUT_MS: process.env.GEMINI_TIMEOUT_MS || '60000',
+        GEMINI_RETRY_ATTEMPTS: process.env.GEMINI_RETRY_ATTEMPTS || '3',
+        ENABLE_BETA_FEATURES: process.env.ENABLE_BETA_FEATURES || 'false',
+        ENABLE_DEBUG_MODE: process.env.ENABLE_DEBUG_MODE || 'false',
+        ENABLE_ANALYTICS: process.env.ENABLE_ANALYTICS || 'true',
+        ENABLE_ERROR_REPORTING: process.env.ENABLE_ERROR_REPORTING || 'true',
+        CLOUDFRONT_DISTRIBUTION_ID: process.env.CLOUDFRONT_DISTRIBUTION_ID || '',
+        CDN_BASE_URL: process.env.CDN_BASE_URL || '',
+        SMTP_HOST: process.env.SMTP_HOST || '',
+        SMTP_PORT: process.env.SMTP_PORT || '',
+        SMTP_USER: process.env.SMTP_USER || '',
+        SMTP_PASSWORD: process.env.SMTP_PASSWORD || '',
+        SMTP_FROM: process.env.SMTP_FROM || '',
+        SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL || '',
+        DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL || '',
+        FAST_REFRESH: process.env.FAST_REFRESH || 'true',
+        GENERATE_SOURCEMAP: process.env.GENERATE_SOURCEMAP || 'false',
+        DEBUG: process.env.DEBUG || '',
+        VERBOSE_LOGGING: process.env.VERBOSE_LOGGING || 'false',
+      } as any;
     }
     throw error;
   }

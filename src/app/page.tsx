@@ -18,7 +18,7 @@ export default function Home() {
         throw new Error('API configuration missing. Please check environment variables.');
       }
 
-      const response = await fetch('/api/v1/optimize', {
+      const response = await fetch('/api/optimize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
