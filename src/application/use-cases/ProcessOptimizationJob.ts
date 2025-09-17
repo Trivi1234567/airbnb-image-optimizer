@@ -550,7 +550,7 @@ export class ProcessOptimizationJob {
     
     // If Apify provides a specific room type, use it
     if (apifyRoomType && roomTypeMap[apifyRoomType.toLowerCase()]) {
-      mappedRoomType = roomTypeMap[apifyRoomType.toLowerCase()];
+      mappedRoomType = roomTypeMap[apifyRoomType.toLowerCase()] || RoomType.OTHER;
     }
     // Otherwise, use Gemini-detected room type if available
     else if (detectedRoomType && detectedRoomType.toLowerCase() !== 'other') {
