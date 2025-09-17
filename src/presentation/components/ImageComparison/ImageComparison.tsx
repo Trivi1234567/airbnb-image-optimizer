@@ -33,7 +33,7 @@ export function ImageComparison({
   imagePair, 
   onDownload,
   onDownloadAll,
-  jobId,
+  jobId: _jobId,
   className = '',
   showDownloadAll = false
 }: ImageComparisonProps) {
