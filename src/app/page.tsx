@@ -6,18 +6,15 @@ export default function Home() {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      // Check if environment variables are configured
-      if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
-        throw new Error('API configuration missing. Please check environment variables.');
-      }
-
       const response = await fetch('/api/optimize', {
         method: 'POST',
         headers: {
@@ -32,8 +29,7 @@ export default function Home() {
       }
 
       const data = await response.json();
-      console.log('Optimization started:', data);
-      alert('Optimization job started successfully!');
+      setSuccess(`Optimization job started successfully! Job ID: ${data.jobId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -73,6 +69,12 @@ export default function Home() {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-red-600">{error}</p>
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-green-600">{success}</p>
               </div>
             )}
 

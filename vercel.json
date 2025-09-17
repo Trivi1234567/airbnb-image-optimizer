@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "outputDirectory": ".next",
   "env": {
     "NODE_ENV": "production"
   },
